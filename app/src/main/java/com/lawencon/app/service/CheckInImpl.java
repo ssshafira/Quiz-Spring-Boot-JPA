@@ -1,7 +1,6 @@
 package com.lawencon.app.service;
 
 import java.sql.Date;
-import java.util.ArrayList;
 import java.util.List;
 
 import javax.persistence.Query;
@@ -15,6 +14,7 @@ import com.lawencon.app.repo.CheckInRepo;
 import com.lawencon.app.repo.CustomRepo;
 
 @Service
+@Transactional
 public class CheckInImpl extends CustomRepo implements CheckInService {
 
 	@Autowired
@@ -40,47 +40,46 @@ public class CheckInImpl extends CustomRepo implements CheckInService {
 	}
 
 	@Override
-	@Transactional
-	public boolean insert(CheckIn ci) throws Exception {
-		boolean stat = false;
-		List<CheckIn> listData = new ArrayList<CheckIn>();
-		listData = ciService.findByPlatAndDate(ci.getPlat(), ci.getTimeIn());
-		if (listData.isEmpty()) {
+	public String insert(CheckIn ci) throws Exception {
+		List<CheckIn> cek = ciService.findByPlatAndDate(ci.getPlat(), ci.getTimeIn());
+		if (cek.isEmpty()) {
 			if (cekPlat(ci.getPlat())) {
-				CheckIn cek = new CheckIn();
-				cek.setJenis(ci.getJenis());
-				cek.setPlat(ci.getPlat());
-				cek.setTimeIn(ci.getTimeIn());
-				em.persist(cek);
-				stat = true;
-			} else stat = false;
-		} else stat = false;
-		return stat;
-	}
-
-	@Override
-	@Transactional
-	public void update(CheckIn ci) throws Exception {
-		List<CheckIn> listData = new ArrayList<CheckIn>();
-		listData = ciService.findByPlatAndDate(ci.getPlat(), ci.getTimeIn());		
-		if (listData.isEmpty()) {
-			if (cekPlat(ci.getPlat())) {
-				CheckIn cek = new CheckIn();
-				cek = findById(ci.getIdIn());
-				cek.setJenis(ci.getJenis());
-				cek.setPlat(ci.getPlat());
-				cek.setTimeIn(ci.getTimeIn());
-				em.merge(cek);
+				CheckIn newData = new CheckIn();
+				newData.setJenis(ci.getJenis());
+				newData.setPlat(ci.getPlat());
+				newData.setTimeIn(ci.getTimeIn());
+				em.persist(newData);
+			} else {
+				throw new Exception("Plat tidak sesuai");
 			}
-		}			
+		} else throw new Exception("Plat ini sudah melakukan Check In pada " + cek.get(0).getTimeIn());
+		return "Berhasil Check In!";
 	}
 
 	@Override
-	@Transactional
-	public void delete(CheckIn ci) throws Exception {
+	public String update(CheckIn ci) throws Exception {	
+		List<CheckIn> cek = ciService.findByPlatAndDate(ci.getPlat(), ci.getTimeIn());
+		if (cek.isEmpty()) {
+			if (cekPlat(ci.getPlat())) {
+				CheckIn newData = new CheckIn();
+				newData = findById(ci.getIdIn());
+				newData.setJenis(ci.getJenis());
+				newData.setPlat(ci.getPlat());
+				newData.setTimeIn(ci.getTimeIn());
+				em.merge(newData);
+			} else {
+				throw new Exception("Plat tidak sesuai");
+			}
+		} else throw new Exception("Plat ini sudah melakukan Check In pada " + cek.get(0).getTimeIn());
+		return "Berhasil edit Check In!";
+	}
+
+	@Override
+	public String delete(CheckIn ci) throws Exception {
 		CheckIn cek = new CheckIn();
 		cek = findById(ci.getIdIn());
 		em.remove(cek);
+		return "Berhasil hapus Check In!";
 	}
 
 	@Override
@@ -97,11 +96,11 @@ public class CheckInImpl extends CustomRepo implements CheckInService {
 		}
 	}
 
-	public boolean cekPlat(String plat) {
+	public boolean cekPlat(String plat) throws Exception {
 		boolean stat = false;
 		String[] tempPlat;
 		tempPlat = plat.split(" ");
-		if (tempPlat[0].equalsIgnoreCase("B") && (tempPlat.length == 3)) {
+		if (tempPlat[0].matches("^[a-zA-Z]*$") && (tempPlat.length == 3)) {
 			if (tempPlat[1].length() > 0 && tempPlat[1].length() <= 4 && isParsable(tempPlat[1])) {
 				char[] chars = tempPlat[2].toCharArray();
 				for (char c : chars) {
@@ -111,11 +110,10 @@ public class CheckInImpl extends CustomRepo implements CheckInService {
 					} else
 						stat = true;
 				}
-				if (tempPlat[2].length() > 0 && tempPlat[2].length() <= 3 && stat) {
-					return stat;
+				if (tempPlat[2].length() > 0 && tempPlat[2].length() <= 3) {
+					stat = true;
 				} else {
 					stat = false;
-					return stat;
 				}
 			}
 		}

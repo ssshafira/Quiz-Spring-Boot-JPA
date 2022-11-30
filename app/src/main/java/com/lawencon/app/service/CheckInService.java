@@ -13,7 +13,7 @@ public interface CheckInService {
 	
 	abstract CheckIn findById(Integer id);
 	
-	abstract boolean insert(CheckIn ci) throws Exception;
-	abstract void update(CheckIn ci) throws Exception;
-	abstract void delete(CheckIn ci) throws Exception;
+	abstract String insert(CheckIn ci) throws Exception;
+	abstract String update(CheckIn ci) throws Exception;
+	abstract String delete(CheckIn ci) throws Exception;
 }

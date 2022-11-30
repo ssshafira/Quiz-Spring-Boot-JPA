@@ -73,40 +73,31 @@ public class ParkiranController {
 	@RequestMapping(method = RequestMethod.POST, value = "/checkin/persist")
 	public ResponseEntity<?> persistCheckIn(@RequestBody CheckIn ci) {
 		try {
-			if (ciService.insert(ci)) {
-				ciService.insert(ci);
-				return new ResponseEntity<>("berhasil cek in", HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>(
-						"plat salah atau sudah cek in di hari yang sama\npisahkan plat dgn spasi (contoh: B 123 ER)",
-						HttpStatus.BAD_REQUEST);
-			}
+			return new ResponseEntity<>(ciService.insert(ci), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, value = "/checkin/merge")
-	public ResponseEntity<List<CheckIn>> mergeCheckIn(@RequestBody CheckIn ci) {
+	public ResponseEntity<?> mergeCheckIn(@RequestBody CheckIn ci) {
 		try {
-			ciService.update(ci);
+			return new ResponseEntity<>(ciService.update(ci), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/checkin/delete")
-	public ResponseEntity<List<CheckIn>> deleteCheckIn(@RequestBody CheckIn ci) {
+	public ResponseEntity<?> deleteCheckIn(@RequestBody CheckIn ci) {
 		try {
-			ciService.delete(ci);
+			return new ResponseEntity<>(ciService.delete(ci), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	/*** CRUD CHECK OUT ***/
@@ -125,46 +116,30 @@ public class ParkiranController {
 	@RequestMapping(method = RequestMethod.POST, value = "/checkout/persist")
 	public ResponseEntity<?> persistCheckOut(@RequestBody CheckOut co) {
 		try {
-			if (coService.insert(co)) {
-				coService.insert(co);
-				return new ResponseEntity<>("berhasil cek out", HttpStatus.OK);
-			} else {
-				return new ResponseEntity<>("tanggal cek out harus setelah cek in", HttpStatus.BAD_REQUEST);
-			}
+			return new ResponseEntity<>(coService.insert(co), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 
 	@RequestMapping(method = RequestMethod.PUT, value = "/checkout/merge")
-	public ResponseEntity<List<CheckIn>> mergeCheckOut(@RequestBody CheckOut co) {
+	public ResponseEntity<?> mergeCheckOut(@RequestBody CheckOut co) {
 		try {
-			coService.update(co);
+			return new ResponseEntity<>(coService.update(co), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
-		return new ResponseEntity<>(HttpStatus.OK);
 	}
 
 	@RequestMapping(method = RequestMethod.DELETE, value = "/checkout/delete")
-	public ResponseEntity<List<CheckOut>> deleteCheckOut(@RequestBody CheckOut co) {
+	public ResponseEntity<?> deleteCheckOut(@RequestBody CheckOut co) {
 		try {
-			coService.delete(co);
+			return new ResponseEntity<>(coService.delete(co), HttpStatus.OK);
 		} catch (Exception e) {
 			e.printStackTrace();
-			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
-		}
-		return new ResponseEntity<>(HttpStatus.OK);
-	}
-
-	public static boolean isParsable(String input) {
-		try {
-			Integer.parseInt(input);
-			return true;
-		} catch (Exception e) {
-			return false;
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.BAD_REQUEST);
 		}
 	}
 

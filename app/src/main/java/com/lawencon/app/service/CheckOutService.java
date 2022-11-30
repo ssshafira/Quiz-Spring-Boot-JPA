@@ -11,8 +11,9 @@ public interface CheckOutService {
 	
 	abstract CheckOut findById(Integer id);
 	abstract Date findDateInById(Integer id);
+	abstract List<CheckOut> findByIdIn(Integer id);
 	
-	abstract boolean insert(CheckOut co) throws Exception;
-	abstract void update(CheckOut co) throws Exception;
-	abstract void delete(CheckOut co) throws Exception;
+	abstract String insert(CheckOut co) throws Exception;
+	abstract String update(CheckOut co) throws Exception;
+	abstract String delete(CheckOut co) throws Exception;
 }

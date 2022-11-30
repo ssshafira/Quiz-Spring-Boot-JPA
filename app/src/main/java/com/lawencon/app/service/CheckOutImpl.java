@@ -14,6 +14,7 @@ import com.lawencon.app.repo.CheckOutRepo;
 import com.lawencon.app.repo.CustomRepo;
 
 @Service
+@Transactional
 public class CheckOutImpl extends CustomRepo implements CheckOutService {
 
 	@Autowired
@@ -38,38 +39,55 @@ public class CheckOutImpl extends CustomRepo implements CheckOutService {
 		q.setParameter("idParam", id);
 		return (Date) q.getSingleResult();
 	}
+	
+	@SuppressWarnings("unchecked")
+	@Override
+	public List<CheckOut> findByIdIn(Integer id) {
+		Query q = em.createQuery("from CheckOut where checkIn.idIn = :idParam");
+		q.setParameter("idParam", id);
+		return q.getResultList();
+	}
 
 	@Override
-	@Transactional
-	public boolean insert(CheckOut co) throws Exception {
-		boolean stat = false;
-		Date dt = coService.findDateInById(co.getCheckIn().getIdIn());
-		if (dt.before(co.getTimeOut())) {
+	public String insert(CheckOut co) throws Exception {
+		Date dateIn = coService.findDateInById(co.getCheckIn().getIdIn());
+		List<CheckOut> cek = coService.findByIdIn(co.getCheckIn().getIdIn());
+		if (cek.isEmpty()) {
+			if (dateIn.before(co.getTimeOut()) || dateIn.equals(co.getTimeOut())) {
+				CheckOut newData = new CheckOut();
+				newData.setCheckIn(co.getCheckIn());
+				newData.setTimeOut(co.getTimeOut());
+				em.persist(newData);
+			} else {
+				throw new Exception ("Tanggal Check Out harus >= tanggal Check In!");
+			}
+		} else {
+			throw new Exception ("Plat ini sudah melakukan Check Out pada " + cek.get(0).getTimeOut());
+		}
+		return "Berhasil Check Out!";
+	}
+
+	@Override
+	public String update(CheckOut co) throws Exception {
+		Date dateIn = coService.findDateInById(co.getCheckIn().getIdIn());
+		if (dateIn.before(co.getTimeOut()) || dateIn.equals(co.getTimeOut())) {
 			CheckOut cek = new CheckOut();
+			cek = findById(co.getIdOut());
 			cek.setCheckIn(co.getCheckIn());
 			cek.setTimeOut(co.getTimeOut());
-			em.persist(cek);
-			stat = true;
-		} else stat = false;
-		return stat;
+			em.merge(cek);
+		} else {
+			throw new Exception ("Tanggal Check Out harus >= tanggal Check In!");
+		}
+		return "Berhasil edit Check Out!";
 	}
 
 	@Override
-	@Transactional
-	public void update(CheckOut co) throws Exception {
-		CheckOut cek = new CheckOut();
-		cek = findById(co.getIdOut());
-		cek.setCheckIn(co.getCheckIn());
-		cek.setTimeOut(co.getTimeOut());
-		em.merge(cek);
-	}
-
-	@Override
-	@Transactional
-	public void delete(CheckOut co) throws Exception {
+	public String delete(CheckOut co) throws Exception {
 		CheckOut cek = new CheckOut();
 		cek = findById(co.getIdOut());
 		em.remove(cek);
+		return "Berhasil hapus Check Out!";
 	}
 
 }
