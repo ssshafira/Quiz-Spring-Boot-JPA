@@ -1,63 +1,50 @@
-package com.lawencon.app.service;
+package com.lawencon.app.service.impl;
 
 import java.sql.Date;
 import java.util.List;
-
-import javax.persistence.Query;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.lawencon.app.dao.CheckOutDao;
 import com.lawencon.app.model.CheckOut;
-import com.lawencon.app.repo.CheckOutRepo;
-import com.lawencon.app.repo.CustomRepo;
+import com.lawencon.app.service.CheckOutService;
 
 @Service
 @Transactional
-public class CheckOutImpl extends CustomRepo implements CheckOutService {
+public class CheckOutServiceImpl implements CheckOutService {
 
 	@Autowired
-	private CheckOutRepo coRepo;
-
-	@Autowired
-	private CheckOutService coService;
+	private CheckOutDao checkOutDao;
 
 	@Override
 	public List<CheckOut> findAll() throws Exception {
-		return coRepo.findAll();
+		return checkOutDao.findAll();
 	}
 
 	@Override
 	public CheckOut findById(Integer id) {
-		return coRepo.findById(id).orElse(null);
+		return checkOutDao.findById(id);
 	}
 
 	@Override
 	public Date findDateInById(Integer id) {
-		Query q = em.createQuery("select timeIn from CheckIn where idIn = :idParam");
-		q.setParameter("idParam", id);
-		return (Date) q.getSingleResult();
+		return checkOutDao.findDateInById(id);
 	}
 	
-	@SuppressWarnings("unchecked")
 	@Override
 	public List<CheckOut> findByIdIn(Integer id) {
-		Query q = em.createQuery("from CheckOut where checkIn.idIn = :idParam");
-		q.setParameter("idParam", id);
-		return q.getResultList();
+		return checkOutDao.findByIdIn(id);
 	}
 
 	@Override
 	public String insert(CheckOut co) throws Exception {
-		Date dateIn = coService.findDateInById(co.getCheckIn().getIdIn());
-		List<CheckOut> cek = coService.findByIdIn(co.getCheckIn().getIdIn());
+		Date dateIn = findDateInById(co.getCheckIn().getIdIn());
+		List<CheckOut> cek = findByIdIn(co.getCheckIn().getIdIn());
 		if (cek.isEmpty()) {
 			if (dateIn.before(co.getTimeOut()) || dateIn.equals(co.getTimeOut())) {
-				CheckOut newData = new CheckOut();
-				newData.setCheckIn(co.getCheckIn());
-				newData.setTimeOut(co.getTimeOut());
-				em.persist(newData);
+				checkOutDao.insert(co);
 			} else {
 				throw new Exception ("Tanggal Check Out harus >= tanggal Check In!");
 			}
@@ -69,13 +56,9 @@ public class CheckOutImpl extends CustomRepo implements CheckOutService {
 
 	@Override
 	public String update(CheckOut co) throws Exception {
-		Date dateIn = coService.findDateInById(co.getCheckIn().getIdIn());
+		Date dateIn = findDateInById(co.getCheckIn().getIdIn());
 		if (dateIn.before(co.getTimeOut()) || dateIn.equals(co.getTimeOut())) {
-			CheckOut cek = new CheckOut();
-			cek = findById(co.getIdOut());
-			cek.setCheckIn(co.getCheckIn());
-			cek.setTimeOut(co.getTimeOut());
-			em.merge(cek);
+			checkOutDao.update(co);
 		} else {
 			throw new Exception ("Tanggal Check Out harus >= tanggal Check In!");
 		}
@@ -84,9 +67,7 @@ public class CheckOutImpl extends CustomRepo implements CheckOutService {
 
 	@Override
 	public String delete(CheckOut co) throws Exception {
-		CheckOut cek = new CheckOut();
-		cek = findById(co.getIdOut());
-		em.remove(cek);
+		checkOutDao.delete(co);
 		return "Berhasil hapus Check Out!";
 	}
 

@@ -1,4 +1,4 @@
-package com.lawencon.app.repo;
+package com.lawencon.app.dao.repo;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;

@@ -1,4 +1,4 @@
-package com.lawencon.app.repo;
+package com.lawencon.app.dao.repo;
 
 import javax.persistence.EntityManager;
 import javax.persistence.PersistenceContext;
